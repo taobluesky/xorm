@@ -203,10 +203,6 @@ var (
 	}
 )
 
-const(
-	sqlServer2000 = "8"
-)
-
 type mssql2 struct {
 	core.Base
 	majorVersion string
@@ -214,30 +210,6 @@ type mssql2 struct {
 
 func (db *mssql2) Init(d *core.DB, uri *core.Uri, drivername, dataSourceName string) error {
 	return db.Base.Init(d, db, uri, drivername, dataSourceName)
-	/*
-	if err !=nil {
-		return err
-	}
-	rows, err := db.DB().Query(`select cast(SERVERPROPERTY('ProductVersion') as varchar)`)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var productVersion string
-
-		err = rows.Scan(&productVersion)
-		if err != nil {
-			return err
-		}
-		kv := strings.Split(productVersion, ".")
-		if len(kv) > 1 {
-			db.majorVersion = kv[1]
-			return nil
-		}
-	}
-	return err*/
 }
 
 func (db *mssql2) SqlType(c *core.Column) string {
@@ -590,25 +562,4 @@ func (db *mssql2) ForUpdateSql(query string) string {
 
 func (db *mssql2) Filters() []core.Filter {
 	return []core.Filter{&core.IdFilter{}, &core.QuoteFilter{}}
-}
-
-type adoDriver struct {
-}
-
-func (p *adoDriver) Parse(driverName, dataSourceName string) (*core.Uri, error) {
-	kv := strings.Split(dataSourceName, ";")
-	var dbName string
-	for _, c := range kv {
-		vv := strings.Split(strings.TrimSpace(c), "=")
-		if len(vv) == 2 {
-			switch strings.ToLower(vv[0]) {
-			case "initial catalog":
-				dbName = vv[1]
-			}
-		}
-	}
-	if dbName == "" {
-		return nil, errors.New("no db name provided")
-	}
-	return &core.Uri{DbName: dbName, DbType: core.MSSQL}, nil
 }
